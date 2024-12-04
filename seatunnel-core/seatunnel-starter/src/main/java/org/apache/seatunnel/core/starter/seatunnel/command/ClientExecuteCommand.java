@@ -86,7 +86,7 @@ public class ClientExecuteCommand implements Command<ClientCommandArgs> {
             ClientConfig clientConfig = ConfigProvider.locateAndGetClientConfig();
             if (clientCommandArgs.getMasterType().equals(MasterType.LOCAL)) {
                 clusterName =
-                        creatRandomClusterName(
+                        clientCommandArgs.creatRandomClusterName(
                                 StringUtils.isNotEmpty(clusterName)
                                         ? clusterName
                                         : Constant.DEFAULT_SEATUNNEL_CLUSTER_NAME);
@@ -129,31 +129,7 @@ public class ClientExecuteCommand implements Command<ClientCommandArgs> {
                         .getJobClient()
                         .savePointJob(Long.parseLong(clientCommandArgs.getSavePointJobId()));
             } else {
-                Path configFile = FileUtils.getConfigPath(clientCommandArgs);
-                checkConfigExist(configFile);
-                JobConfig jobConfig = new JobConfig();
-                ClientJobExecutionEnvironment jobExecutionEnv;
-                jobConfig.setName(clientCommandArgs.getJobName());
-                if (null != clientCommandArgs.getRestoreJobId()) {
-                    jobExecutionEnv =
-                            engineClient.restoreExecutionContext(
-                                    configFile.toString(),
-                                    clientCommandArgs.getVariables(),
-                                    jobConfig,
-                                    seaTunnelConfig,
-                                    Long.parseLong(clientCommandArgs.getRestoreJobId()));
-                } else {
-                    jobExecutionEnv =
-                            engineClient.createExecutionContext(
-                                    configFile.toString(),
-                                    clientCommandArgs.getVariables(),
-                                    jobConfig,
-                                    seaTunnelConfig,
-                                    clientCommandArgs.getCustomJobId() != null
-                                            ? Long.parseLong(clientCommandArgs.getCustomJobId())
-                                            : null);
-                }
-
+                ClientJobExecutionEnvironment jobExecutionEnv = clientCommandArgs.getClientJobExecutionEnvironment(engineClient, seaTunnelConfig);
                 // get job start time
                 startTime = LocalDateTime.now();
                 // create job proxy
@@ -266,11 +242,6 @@ public class ClientExecuteCommand implements Command<ClientCommandArgs> {
                 seaTunnelConfig.getHazelcastConfig(),
                 Thread.currentThread().getName(),
                 new SeaTunnelNodeContext(seaTunnelConfig));
-    }
-
-    private String creatRandomClusterName(String namePrefix) {
-        Random random = new Random();
-        return namePrefix + "-" + random.nextInt(1000000);
     }
 
     private void shutdownHook(ClientJobProxy clientJobProxy) {

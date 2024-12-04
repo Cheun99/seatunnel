@@ -33,11 +33,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import com.google.common.annotations.VisibleForTesting;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 public class ClientJobExecutionEnvironment extends AbstractJobEnvironment {
@@ -180,6 +176,7 @@ public class ClientJobExecutionEnvironment extends AbstractJobEnvironment {
 
     public ClientJobProxy execute() throws ExecutionException, InterruptedException {
         LogicalDag logicalDag = getLogicalDag();
+
         JobImmutableInformation jobImmutableInformation =
                 new JobImmutableInformation(
                         Long.parseLong(jobConfig.getJobContext().getJobId()),

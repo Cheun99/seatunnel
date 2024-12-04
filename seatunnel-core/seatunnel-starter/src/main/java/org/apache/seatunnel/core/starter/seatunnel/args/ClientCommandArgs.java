@@ -17,6 +17,8 @@
 
 package org.apache.seatunnel.core.starter.seatunnel.args;
 
+import com.hazelcast.client.config.ClientConfig;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.seatunnel.common.config.Common;
 import org.apache.seatunnel.common.config.DeployMode;
 import org.apache.seatunnel.core.starter.command.AbstractCommandArgs;
@@ -34,9 +36,21 @@ import com.beust.jcommander.ParameterException;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.seatunnel.core.starter.utils.FileUtils;
+import org.apache.seatunnel.engine.client.SeaTunnelClient;
+import org.apache.seatunnel.engine.client.job.ClientJobExecutionEnvironment;
+import org.apache.seatunnel.engine.common.Constant;
+import org.apache.seatunnel.engine.common.config.ConfigProvider;
+import org.apache.seatunnel.engine.common.config.JobConfig;
+import org.apache.seatunnel.engine.common.config.SeaTunnelConfig;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
+
+import static org.apache.seatunnel.core.starter.utils.FileUtils.checkConfigExist;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -157,4 +171,34 @@ public class ClientCommandArgs extends AbstractCommandArgs {
             }
         }
     }
+
+    public ClientJobExecutionEnvironment getClientJobExecutionEnvironment(SeaTunnelClient engineClient, SeaTunnelConfig seaTunnelConfig) {
+        Path configFile = getConfigFilePath(this);
+        JobConfig jobConfig = new JobConfig();
+        jobConfig.setName(getJobName());
+        ClientJobExecutionEnvironment jobExecutionEnv;
+        if (null != getRestoreJobId()) {
+            jobExecutionEnv =
+                    engineClient.restoreExecutionContext(
+                            configFile.toString(),
+                            getVariables(),
+                            jobConfig,
+                            seaTunnelConfig,
+                            Long.parseLong(getRestoreJobId()));
+        } else {
+            jobExecutionEnv =
+                    engineClient.createExecutionContext(
+                            configFile.toString(),
+                            getVariables(),
+                            jobConfig,
+                            seaTunnelConfig,
+                            getCustomJobId() != null
+                                    ? Long.parseLong(getCustomJobId())
+                                    : null);
+        }
+        return jobExecutionEnv;
+    }
+
+
+
 }

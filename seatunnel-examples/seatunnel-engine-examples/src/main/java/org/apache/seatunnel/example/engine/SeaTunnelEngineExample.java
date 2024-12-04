@@ -31,11 +31,15 @@ public class SeaTunnelEngineExample {
 
     public static void main(String[] args)
             throws FileNotFoundException, URISyntaxException, CommandException {
-        String configurePath = args.length > 0 ? args[0] : "/examples/fake_to_console.conf";
+        String configurePath =
+                args.length > 0
+                        ? args[0]
+                        : "/examples/fake_to_console.conf"; // multiple_source   fake_to_console
+        // fake_to_console.conf
         String configFile = getTestConfigFile(configurePath);
         ClientCommandArgs clientCommandArgs = new ClientCommandArgs();
         clientCommandArgs.setConfigFile(configFile);
-        clientCommandArgs.setCheckConfig(false);
+        clientCommandArgs.setCheckConfig(true);// true  false
         clientCommandArgs.setJobName(Paths.get(configFile).getFileName().toString());
         // Change Execution Mode to CLUSTER to use client mode, before do this, you should start
         // SeaTunnelEngineServerExample

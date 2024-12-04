@@ -17,15 +17,24 @@
 
 package org.apache.seatunnel.core.starter.command;
 
+import com.hazelcast.client.config.ClientConfig;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.instance.impl.HazelcastInstanceFactory;
 import org.apache.seatunnel.common.Constants;
 import org.apache.seatunnel.common.config.DeployMode;
 
 import com.beust.jcommander.Parameter;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
+import org.apache.seatunnel.core.starter.utils.FileUtils;
+import org.apache.seatunnel.engine.common.config.ConfigProvider;
+import org.apache.seatunnel.engine.common.config.EngineConfig;
+import org.apache.seatunnel.engine.common.config.SeaTunnelConfig;
+import org.apache.seatunnel.engine.common.runtime.ExecutionMode;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 /** Abstract class of {@link CommandArgs} implementation to save common configuration settings */
 @EqualsAndHashCode(callSuper = true)
@@ -74,4 +83,36 @@ public abstract class AbstractCommandArgs extends CommandArgs {
     protected boolean decrypt = false;
 
     public abstract DeployMode getDeployMode();
+
+    /**
+     * get SeaTunnelConfig
+     */
+    public SeaTunnelConfig getSeaTunnelConfig() {
+        return ConfigProvider.locateAndGetSeaTunnelConfig();
+    }
+
+    /**
+     * get ClientConfig
+     */
+    public ClientConfig getClientConfig() {
+        return ConfigProvider.locateAndGetClientConfig();
+    }
+
+    /**
+     * get config path
+     * @param commandArgs
+     * @return
+     */
+    public Path getConfigFilePath(AbstractCommandArgs commandArgs) {
+        Path configFile = FileUtils.getConfigPath(commandArgs);
+        FileUtils.checkConfigExist(configFile);
+        return configFile;
+    }
+
+    public String creatRandomClusterName(String namePrefix) {
+        Random random = new Random();
+        return namePrefix + "-" + random.nextInt(1000000);
+    }
+
+
 }
